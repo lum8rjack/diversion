@@ -11,7 +11,7 @@ import (
 func exitNote(result string) {
 	flag.PrintDefaults()
 	fmt.Println(result)
-	os.Exit(1)
+	os.Exit(0)
 }
 
 func main() {

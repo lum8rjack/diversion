@@ -1,7 +1,7 @@
 # diversion
 
 ## Overview
-Diversion is able to bypasses AMSI in a 64bit process by providing the PID.
+Diversion is able to bypasses AMSI in both 32bit and 64bit processes.
 
 
 ## Requirements
@@ -15,6 +15,7 @@ Once installed, you can build the binary using the Makefile or the build command
 
 ```bash
 GOOS=windows GOARCH=amd64 go build -ldflags "-s -w" -trimpath -o diversion.exe
+GOOS=windows GOARCH=386 go build -ldflags "-s -w" -trimpath -o diversion32.exe
 ```
 
 ## Examples
@@ -26,12 +27,11 @@ Diversion requires the PID of the process to inject into.
     	Process ID to inject into
 ```
 
-Simple check to see that running `AmsiUtil` gets marked as malicious before bypassing Amsi.
+Simple check to see that running `AmsiUtil` gets flagged as malicious before bypassing Amsi.
 
 ![diversion.png](diversion.png)
 
 ## Future Improvements
-- Update to work with 32bit processes
 - Additional AMSI bypasses
 - ETW bypasses
 - DLL unhooking
