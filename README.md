@@ -1,7 +1,7 @@
 # diversion
 
 ## Overview
-Diversion is able to bypasses AMSI in both 32bit and 64bit processes.
+Diversion is able to bypasses Amsi and ETW in both 32bit and 64bit processes.
 
 
 ## Requirements
@@ -19,25 +19,41 @@ GOOS=windows GOARCH=386 go build -ldflags "-s -w" -trimpath -o diversion32.exe
 ```
 
 ## Examples
-Diversion requires the PID of the process to inject into.
+Diversion requires the PID of the process to inject into and the bypass method.
 
 ```bash
 ./diversion.exe
+  -method string
+        Evasion method: amsi, etw (default "amsi")
   -pid int
-    	Process ID to inject into
+        PID of the process to inject into
 ```
 
-Simple check to see that running `AmsiUtil` gets flagged as malicious before bypassing Amsi.
+### Amsi
 
-![diversion.png](diversion.png)
+Simple check to see that running `AmsiUtil` gets flagged as malicious before bypassing Amsi. After running diversion, the command is no longer flagged as malicious.
+
+![amsi.png](img/amsi.png)
+
+### ETW
+
+Using ProcessHacker to view the loaded .NET Assemblies within a process when using execute-assembly.
+
+![etw1.png](img/etw1.png)
+
+No .NET assemblies will be displayed when bypassing ETW.
+
+![etw2.png](img/etw2.png)
 
 ## Future Improvements
-- Additional AMSI bypasses
-- ETW bypasses
 - DLL unhooking
+- Additional evasions/bypasses
 
 ## References / Credit
 
-Amsi bypass technique converted from boku7's BOFF
+Amsi bypass technique converted from boku7's BOFF.
 - https://github.com/boku7/injectAmsiBypass
 
+ETW bypass technique coverted from mdsec example. Boku7 also created a BOFF file which uses Syscalls.
+- https://www.mdsec.co.uk/2020/03/hiding-your-net-etw/
+- https://github.com/boku7/injectEtwBypass

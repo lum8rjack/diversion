@@ -1,7 +1,7 @@
 NAME := diversion
 BUILD := go build -ldflags "-s -w" -trimpath
 
-default: windows
+default: windows windows32
 
 clean:
 	rm -f $(NAME)*.exe
