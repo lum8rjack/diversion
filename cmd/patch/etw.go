@@ -1,9 +1,10 @@
-package modules
+package patch
 
 import (
 	"errors"
 	"fmt"
 
+	"github.com/lum8rjack/diversion/cmd/modules"
 	"golang.org/x/sys/windows"
 )
 
@@ -17,7 +18,7 @@ func PatchETW(pid int) error {
 
 	// ret 14
 	// bytes for 32bit process
-	if IsWOW64Process() {
+	if modules.IsWOW64Process() {
 		newBytes = []byte{0xc2, 0x14, 0x00, 0x00}
 	}
 
@@ -28,7 +29,7 @@ func PatchETW(pid int) error {
 	// dwDesiredAccess = PROCESS_VM_OPERATION (0x0008) | PROCESS_VM_WRITE (0x0020)
 	// bInheritHandle = False
 	// dwProcessId = PID
-	procHandle, err := windows.OpenProcess(PROCESS_VM_OPERATION|PROCESS_VM_WRITE, false, uint32(pid))
+	procHandle, err := windows.OpenProcess(modules.PROCESS_VM_OPERATION|modules.PROCESS_VM_WRITE, false, uint32(pid))
 
 	if err != nil {
 		rs := fmt.Sprintf("Error opening process with PID: %d\n", pid)

